@@ -13,7 +13,6 @@
 #include <climits>
 #include <cmath>
 #include <exception>
-#include <krnlib/string.hpp>
 
 #ifndef FMT_STATIC_THOUSANDS_SEPARATOR
 #  include <locale>
