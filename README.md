@@ -1,4 +1,4 @@
-# krnl-fmt
+# krnfmt
 驱动中可用的C++20 format库
 改写自[fmt库](https://github.com/fmtlib/fmt)
 ## 修改内容:
