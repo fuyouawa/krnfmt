@@ -557,9 +557,9 @@ template <typename T>
 using iterator_t = decltype(std::begin(std::declval<T&>()));
 template <typename T> using sentinel_t = decltype(std::end(std::declval<T&>()));
 
-// A workaround for krnlib::string not having mutable data() until C++17.
+// A workaround for std::string not having mutable data() until C++17.
 template <typename Char>
-inline auto get_data(krnlib::basic_string<Char>& s) -> Char* {
+inline auto get_data(std::basic_string<Char>& s) -> Char* {
   return &s[0];
 }
 template <typename Container>
@@ -870,7 +870,7 @@ enum { inline_buffer_size = 500 };
 
      The answer is 42.
 
-  The output can be converted to an ``krnlib::string`` with ``to_string(out)``.
+  The output can be converted to an ``std::string`` with ``to_string(out)``.
   \endrst
  */
 template <typename T, size_t SIZE = inline_buffer_size,
@@ -1054,9 +1054,9 @@ class loc_value {
 // It is parameterized on the locale to avoid the heavy <locale> include.
 template <typename Locale> class format_facet : public Locale::facet {
  private:
-  krnlib::string separator_;
-  krnlib::string grouping_;
-  krnlib::string decimal_point_;
+  std::string separator_;
+  std::string grouping_;
+  std::string decimal_point_;
 
  protected:
   virtual auto do_put(appender out, loc_value val,
@@ -1068,7 +1068,7 @@ template <typename Locale> class format_facet : public Locale::facet {
   explicit format_facet(Locale& loc);
   explicit format_facet(string_view sep = "",
                         std::initializer_list<unsigned char> g = {3},
-                        krnlib::string decimal_point = ".")
+                        std::string decimal_point = ".")
       : separator_(sep.data(), sep.size()),
         grouping_(g.begin(), g.end()),
         decimal_point_(decimal_point) {}
@@ -1236,7 +1236,7 @@ template <> constexpr auto digits10<int128_opt>() noexcept -> int { return 38; }
 template <> constexpr auto digits10<uint128_t>() noexcept -> int { return 38; }
 
 template <typename Char> struct thousands_sep_result {
-  krnlib::string grouping;
+  std::string grouping;
   Char thousands_sep;
 };
 
@@ -1381,7 +1381,7 @@ template <typename WChar, typename Buffer = memory_buffer> class to_utf8 {
   operator string_view() const { return string_view(&buffer_[0], size()); }
   size_t size() const { return buffer_.size() - 1; }
   const char* c_str() const { return &buffer_[0]; }
-  krnlib::string str() const { return krnlib::string(&buffer_[0], size()); }
+  std::string str() const { return std::string(&buffer_[0], size()); }
 
   // Performs conversion returning a bool instead of throwing exception on
   // conversion error. This method may still throw in case of memory allocation
@@ -1693,7 +1693,7 @@ inline auto find_escape(const char* begin, const char* end)
   **Example**::
 
     // A compile-time error because 'd' is an invalid specifier for strings.
-    krnlib::string s = fmt::format(FMT_STRING("{:d}"), "foo");
+    std::string s = fmt::format(FMT_STRING("{:d}"), "foo");
   \endrst
  */
 #define FMT_STRING(s) FMT_STRING_IMPL(s, fmt::detail::compile_string, )
@@ -1857,11 +1857,11 @@ FMT_CONSTEXPR FMT_INLINE auto write_int(OutputIt out, int num_digits,
 
 template <typename Char> class digit_grouping {
  private:
-  krnlib::string grouping_;
-  krnlib::basic_string<Char> thousands_sep_;
+  std::string grouping_;
+  std::basic_string<Char> thousands_sep_;
 
   struct next_state {
-    krnlib::string::const_iterator group;
+    std::string::const_iterator group;
     int pos;
   };
   next_state initial_state() const { return {grouping_.begin(), 0}; }
@@ -1883,7 +1883,7 @@ template <typename Char> class digit_grouping {
     grouping_ = sep.grouping;
     if (sep.thousands_sep) thousands_sep_.assign(1, sep.thousands_sep);
   }
-  digit_grouping(krnlib::string grouping, krnlib::basic_string<Char> sep)
+  digit_grouping(std::string grouping, std::basic_string<Char> sep)
       : grouping_(std::move(grouping)), thousands_sep_(std::move(sep)) {}
 
   bool has_separator() const { return !thousands_sep_.empty(); }
@@ -1979,9 +1979,9 @@ FMT_CONSTEXPR auto make_write_int_arg(T value, sign_t sign)
 template <typename Char = char> struct loc_writer {
   buffer_appender<Char> out;
   const format_specs<Char>& specs;
-  krnlib::basic_string<Char> sep;
-  krnlib::string grouping;
-  krnlib::basic_string<Char> decimal_point;
+  std::basic_string<Char> sep;
+  std::string grouping;
+  std::basic_string<Char> decimal_point;
 
   template <typename T, FMT_ENABLE_IF(is_integer<T>::value)>
   auto operator()(T value) -> bool {
@@ -2984,7 +2984,7 @@ template <typename Char> struct udl_arg {
 template <typename Locale, typename Char>
 auto vformat(const Locale& loc, basic_string_view<Char> fmt,
              basic_format_args<buffer_context<type_identity_t<Char>>> args)
-    -> krnlib::basic_string<Char> {
+    -> std::basic_string<Char> {
   auto buf = basic_memory_buffer<Char>();
   detail::vformat_to(buf, fmt, args, detail::locale_ref(loc));
   return {buf.data(), buf.size()};
@@ -3102,10 +3102,10 @@ class format_int {
 
   /**
     \rst
-    Returns the content of the output buffer as an ``krnlib::string``.
+    Returns the content of the output buffer as an ``std::string``.
     \endrst
    */
-  auto str() const -> krnlib::string { return krnlib::string(str_, size()); }
+  auto str() const -> std::string { return std::string(str_, size()); }
 };
 
 template <typename T, typename Char>
@@ -3131,7 +3131,7 @@ FMT_FORMAT_AS(unsigned short, unsigned);
 FMT_FORMAT_AS(long, detail::long_type);
 FMT_FORMAT_AS(unsigned long, detail::ulong_type);
 FMT_FORMAT_AS(Char*, const Char*);
-FMT_FORMAT_AS(krnlib::basic_string<Char>, basic_string_view<Char>);
+FMT_FORMAT_AS(std::basic_string<Char>, basic_string_view<Char>);
 FMT_FORMAT_AS(std::nullptr_t, const void*);
 FMT_FORMAT_AS(detail::std_string_view<Char>, basic_string_view<Char>);
 FMT_FORMAT_AS(void*, const void*);
@@ -3387,44 +3387,44 @@ auto join(Range&& range, string_view sep)
 
 /**
   \rst
-  Converts *value* to ``krnlib::string`` using the default format for type *T*.
+  Converts *value* to ``std::string`` using the default format for type *T*.
 
   **Example**::
 
     #include <fmt/format.h>
 
-    krnlib::string answer = fmt::to_string(42);
+    std::string answer = fmt::to_string(42);
   \endrst
  */
 template <typename T, FMT_ENABLE_IF(!std::is_integral<T>::value &&
                                     !detail::has_format_as<T>::value)>
-inline auto to_string(const T& value) -> krnlib::string {
+inline auto to_string(const T& value) -> std::string {
   auto buffer = memory_buffer();
   detail::write<char>(appender(buffer), value);
   return {buffer.data(), buffer.size()};
 }
 
 template <typename T, FMT_ENABLE_IF(std::is_integral<T>::value)>
-FMT_NODISCARD inline auto to_string(T value) -> krnlib::string {
+FMT_NODISCARD inline auto to_string(T value) -> std::string {
   // The buffer should be large enough to store the number including the sign
   // or "false" for bool.
   constexpr int max_size = detail::digits10<T>() + 2;
   char buffer[max_size > 5 ? static_cast<unsigned>(max_size) : 5];
   char* begin = buffer;
-  return krnlib::string(begin, detail::write<char>(begin, value));
+  return std::string(begin, detail::write<char>(begin, value));
 }
 
 template <typename Char, size_t SIZE>
 FMT_NODISCARD auto to_string(const basic_memory_buffer<Char, SIZE>& buf)
-    -> krnlib::basic_string<Char> {
+    -> std::basic_string<Char> {
   auto size = buf.size();
-  detail::assume(size < krnlib::basic_string<Char>().max_size());
-  return krnlib::basic_string<Char>(buf.data(), size);
+  detail::assume(size < std::basic_string<Char>().max_size());
+  return std::basic_string<Char>(buf.data(), size);
 }
 
 template <typename T, FMT_ENABLE_IF(!std::is_integral<T>::value &&
                                     detail::has_format_as<T>::value)>
-inline auto to_string(const T& value) -> krnlib::string {
+inline auto to_string(const T& value) -> std::string {
   return to_string(format_as(value));
 }
 
@@ -3544,14 +3544,14 @@ constexpr auto operator""_a(const char* s, size_t) -> detail::udl_arg<char> {
 
 template <typename Locale, FMT_ENABLE_IF(detail::is_locale<Locale>::value)>
 inline auto vformat(const Locale& loc, string_view fmt, format_args args)
-    -> krnlib::string {
+    -> std::string {
   return detail::vformat(loc, fmt, args);
 }
 
 template <typename Locale, typename... T,
           FMT_ENABLE_IF(detail::is_locale<Locale>::value)>
 inline auto format(const Locale& loc, format_string<T...> fmt, T&&... args)
-    -> krnlib::string {
+    -> std::string {
   return fmt::vformat(loc, string_view(fmt), fmt::make_format_args(args...));
 }
 

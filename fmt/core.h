@@ -19,7 +19,6 @@
 #include <limits>
 #include <memory>  // std::addressof
 #include <type_traits>
-#include <krnlib/string.hpp>
 
 // The fmt library version in the form major * 10000 + minor * 100 + patch.
 #define FMT_VERSION 100101
@@ -277,7 +276,7 @@ using underlying_t = typename std::underlying_type<T>::type;
 // Checks whether T is a container with contiguous storage.
 template <typename T> struct is_contiguous : std::false_type {};
 template <typename Char>
-struct is_contiguous<krnlib::basic_string<Char>> : std::true_type {};
+struct is_contiguous<std::basic_string<Char>> : std::true_type {};
 
 struct monostate {
   constexpr monostate() {}
@@ -435,10 +434,10 @@ template <typename Char> class basic_string_view {
                   ? std::strlen(reinterpret_cast<const char*>(s))
                   : std::char_traits<Char>::length(s)) {}
 
-  /** Constructs a string reference from a ``krnlib::basic_string`` object. */
+  /** Constructs a string reference from a ``std::basic_string`` object. */
   template <typename Traits, typename Alloc>
   FMT_CONSTEXPR basic_string_view(
-      const krnlib::basic_string<Char, Traits, Alloc>& s) noexcept
+      const std::basic_string<Char, Traits, Alloc>& s) noexcept
       : data_(s.data()), size_(s.size()) {}
 
   template <typename S, FMT_ENABLE_IF(std::is_same<
@@ -528,7 +527,7 @@ FMT_INLINE auto to_string_view(const Char* s) -> basic_string_view<Char> {
   return s;
 }
 template <typename Char, typename Traits, typename Alloc>
-inline auto to_string_view(const krnlib::basic_string<Char, Traits, Alloc>& s)
+inline auto to_string_view(const std::basic_string<Char, Traits, Alloc>& s)
     -> basic_string_view<Char> {
   return s;
 }
@@ -1480,8 +1479,8 @@ auto copy_str(InputIt begin, InputIt end, appender out) -> appender {
 }
 template <typename Char, typename InputIt>
 auto copy_str(InputIt begin, InputIt end,
-              std::back_insert_iterator<krnlib::string> out)
-    -> std::back_insert_iterator<krnlib::string> {
+              std::back_insert_iterator<std::string> out)
+    -> std::back_insert_iterator<std::string> {
   get_container(out).append(begin, end);
   return out;
 }
@@ -2745,7 +2744,7 @@ using format_string = basic_format_string<char, type_identity_t<Args>...>;
 inline auto runtime(string_view s) -> runtime_format_string<> { return {{s}}; }
 #endif
 
-FMT_API auto vformat(string_view fmt, format_args args) -> krnlib::string;
+FMT_API auto vformat(string_view fmt, format_args args) -> std::string;
 
 /**
   \rst
@@ -2755,12 +2754,12 @@ FMT_API auto vformat(string_view fmt, format_args args) -> krnlib::string;
   **Example**::
 
     #include <fmt/core.h>
-    krnlib::string message = fmt::format("The answer is {}.", 42);
+    std::string message = fmt::format("The answer is {}.", 42);
   \endrst
 */
 template <typename... T>
 FMT_NODISCARD FMT_INLINE auto format(format_string<T...> fmt, T&&... args)
-    -> krnlib::string {
+    -> std::string {
   return vformat(fmt, fmt::make_format_args(args...));
 }
 

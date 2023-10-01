@@ -136,7 +136,7 @@ template <typename Locale> typename Locale::id format_facet<Locale>::id;
 template <typename Locale> format_facet<Locale>::format_facet(Locale& loc) {
   auto& numpunct = std::use_facet<std::numpunct<char>>(loc);
   grouping_ = numpunct.grouping();
-  if (!grouping_.empty()) separator_ = krnlib::string(1, numpunct.thousands_sep());
+  if (!grouping_.empty()) separator_ = std::string(1, numpunct.thousands_sep());
 }
 
 template <>
@@ -150,7 +150,7 @@ FMT_API FMT_FUNC auto format_facet<std::locale>::do_put(
 FMT_FUNC std::system_error vsystem_error(int error_code, string_view fmt,
                                          format_args args) {
   auto ec = std::error_code(error_code, std::generic_category());
-  return std::system_error(ec, vformat(fmt, args).c_str());
+  return std::system_error(ec, vformat(fmt, args));
 }
 
 namespace detail {
@@ -378,7 +378,7 @@ FMT_FUNC void report_system_error(int error_code,
   report_error(format_system_error, error_code, message);
 }
 
-FMT_FUNC krnlib::string vformat(string_view fmt, format_args args) {
+FMT_FUNC std::string vformat(string_view fmt, format_args args) {
   // Don't optimize the "{}" case to keep the binary size small and because it
   // can be better optimized in fmt::format anyway.
   auto buffer = memory_buffer();
